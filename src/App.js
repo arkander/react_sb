@@ -1,25 +1,42 @@
-import logo from './logo.svg';
+import {useState, useEffect} from 'react';
 import './App.css';
+import {getAllStudents} from './client';
 
 function App() {
+
+    const [students, setStudents] = useState([]);
+
+    const fetchStudents = ()=>{
+        getAllStudents()
+            .then(res=>res.json())
+            .then(students=>{
+                console.log(students)
+                setStudents(students);
+            });
+    }
+
+    useEffect(()=>{
+        fetchStudents();
+    },[]);
+
+    if(students && students.length){
+        return students.map((student, id) =>{
+                    return (
+                        <div key={id}>
+                            <h2>{student.id}</h2>
+                            <p>{student.firstName} {student.lastName}</p>
+                            <p>{student.gender} </p>
+                            <p>{student.email} </p>
+                        </div>
+                    );
+        });
+    }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          OLa mundo
-        </a>
-      </header>
-    </div>
+    <h1>No Students found</h1>
   );
 }
 
 export default App;
+
+
