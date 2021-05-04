@@ -1,13 +1,12 @@
-import {useState, useEffect} from 'react';
+import React , {useState, useEffect} from 'react';
 import './App.css';
 import {getAllStudents} from './client';
-import {Table, Avatar, Spin, Modal} from 'antd';
+import {Table, Avatar, Spin, Modal, Empty} from 'antd';
 import Container from './Container';
 import Footer from './Footer';
 import AddStudentForm from './forms/AddStudentForm';
-
-
-
+import {errorNotification} from './Notification';
+import Students from "./Students";
 
 function App() {
 
@@ -22,6 +21,10 @@ function App() {
             .then(students=>{
                setIsFetching(false);
                 setStudents(students);
+            }).catch(error=>{
+                errorNotification(error.error.message, error.error.error);
+            }).finally(()=>{
+                setIsFetching(false);
             });
     }
 
@@ -33,6 +36,27 @@ function App() {
         setIsAddingStudentModalVisible(false);
     }
 
+    const commonElements = () =>(
+        <div>
+            <Modal
+                title='Add New Student'
+                visible={isAddingStudentModalVisible}
+                onOk={closeAddStudentModal}
+                onCancel={closeAddStudentModal}
+                width={1000}>
+                <AddStudentForm onSuccess={()=>{
+                    closeAddStudentModal();
+                    fetchStudents();
+                }}
+                onFailure = {(err)=>{
+                    errorNotification(err.error.message, err.error.httpStatus);
+                }}/>
+            </Modal>
+            <Footer  numberOfStudents={students.length}
+                     handleStudentAddClickEvent={openAddStudentModal}/>
+        </div>
+    );
+
     useEffect(()=>{
         fetchStudents();
     },[]);
@@ -43,8 +67,14 @@ function App() {
                 </Container>);
     }
 
-    if(students && students.length){
-        const columns = [
+    if(students && students.length ){
+        return (
+            <Container >
+                <Students data={students}/>
+                {commonElements()}
+            </Container> )
+
+        /*const columns = [
             {title:'', key:'studentId', render:(text, student)=>(
                 <Avatar size='large'>
                     {`${student.firstName.charAt(0).toUpperCase()}${student.lastName.charAt(0).toUpperCase()}` }
@@ -58,30 +88,24 @@ function App() {
         ];
 
         return (
-            <Container>
-                <Table dataSource={students}
-                       columns={columns}
-                       pagination={false}
-                       rowKey='studentId'/>
-                <Modal
-                    title='Add New Student'
-                    visible={isAddingStudentModalVisible}
-                    onOk={closeAddStudentModal}
-                    onCancel={closeAddStudentModal}
-                    width={1000}
-                >
-                    <AddStudentForm/>
-                </Modal>
-                <Footer numberOfStudents={students.length}
-                        handleStudentAddClickEvent={openAddStudentModal}/>
-            </Container> );
+            <Container >
+                    <Table sticky={true}
+                           dataSource={students}
+                           columns={columns}
+                           pagination={false}
+                           rowKey='studentId'/>
 
-
-
+                {commonElements()}
+            </Container> );*/
     }
 
   return (
-    <h1>No Students found</h1>
+      <Container>
+          <Empty description={
+              <h1>No Students Found</h1>
+          }/>
+          {commonElements()}
+      </Container>
   );
 }
 

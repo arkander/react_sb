@@ -1,15 +1,20 @@
-import React , {Component} from 'react';
+import React  from 'react';
 import {Formik} from 'formik';
-import {Input, Button} from "antd";
+import {Input, Button, Tag} from "antd";
+import {addNewStudent} from "../client";
 
 const inputStyle = {marginBottom:'5px'};
 
-class AddStudentForm extends Component{
+const tagMessage = (errorMessage)=>{
+    let tagStyle = {backgroundColor:'#f50', color:'white', ...inputStyle};
+    return <Tag style={tagStyle}>{errorMessage}</Tag>
+}
 
-    render() {
-        return(
+const  AddStudentForm  = (props) =>
+(
             <Formik
                 initialValues={{firstName:'', lastName:'', email: '', gender: '' }}
+                isInitialValid={false}
                 validate={values => {
                     const errors = {};
                     if (!values.email) {
@@ -35,10 +40,14 @@ class AddStudentForm extends Component{
                     return errors;
                 }}
                 onSubmit={(values, { setSubmitting }) => {
-                    setTimeout(() => {
-                        alert(JSON.stringify(values, null, 2));
+                    addNewStudent(values).then(()=>{
+                       props.onSuccess();
+                    }).catch(err =>{
+                            props.onFailure(err);
+                        }
+                    ).finally(()=>{
                         setSubmitting(false);
-                    }, 400);
+                    });
                 }}
             >
                 {({
@@ -49,9 +58,12 @@ class AddStudentForm extends Component{
                       handleBlur,
                       handleSubmit,
                       isSubmitting,
+                      submitForm,
+                      isValid
                       /* and other goodies */
                   }) => (
                     <form onSubmit={handleSubmit}>
+                        {errors.firstName && touched.firstName && tagMessage(errors.firstName)}
                         <Input
                             style={inputStyle}
                             name="firstName"
@@ -60,8 +72,8 @@ class AddStudentForm extends Component{
                             value={values.firstName}
                             placeholder='First Name'
                         />
-                        {errors.firstName && touched.firstName && errors.firstName}
 
+                        {errors.lastName && touched.lastName && tagMessage(errors.lastName)}
                         <Input
                             style={inputStyle}
                             name="lastName"
@@ -70,8 +82,8 @@ class AddStudentForm extends Component{
                             value={values.lastName}
                             placeholder='Last Name'
                         />
-                        {errors.lastName && touched.lastName && errors.lastName}
 
+                        {errors.email && touched.email && tagMessage(errors.email)}
                         <Input
                             style={inputStyle}
                             name="email"
@@ -79,10 +91,10 @@ class AddStudentForm extends Component{
                             onChange={handleChange}
                             onBlur={handleBlur}
                             value={values.email}
-                            placeholder='Email'
+                            placeholder='Email Required'
                         />
-                        {errors.email && touched.email && errors.email}
 
+                        {errors.gender && touched.gender && tagMessage(errors.gender)}
                         <Input
                             style={inputStyle}
                             name="gender"
@@ -91,8 +103,10 @@ class AddStudentForm extends Component{
                             value={values.gender}
                             placeholder='Gender. E.g Male or Female'
                         />
-                        {errors.gender && touched.gender && errors.gender}
-                        <Button type="submit" disabled={isSubmitting}>
+
+                        <Button type="submit"
+                                disabled={isSubmitting | (touched && !isValid)}
+                                onClick={()=>submitForm()}>
                             Submit
                         </Button>
                     </form>
@@ -100,7 +114,6 @@ class AddStudentForm extends Component{
             </Formik>
 
         );
-    }
-}
+
 
 export default  AddStudentForm;
