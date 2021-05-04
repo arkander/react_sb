@@ -2,11 +2,13 @@ import React, {useState} from 'react';
 import {Avatar, Table} from "antd";
 import {getAllCourseByStudent} from './client';
 import {errorNotification} from "./Notification";
-
+import 'antd/dist/antd.dark.min.css'
 
 const Students = ({data})=>{
 
     const [nestedData, setNestedData] = useState({});
+
+
     const [isLoading, setIsLoading] = useState({});
 
     const handleExpand = (expanded, record) => {
